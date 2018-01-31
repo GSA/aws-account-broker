@@ -18,7 +18,11 @@ func (e notImplementedError) Error() string {
 	return "Not implemented"
 }
 
-type awsAccountBroker struct{}
+type awsAccountBroker struct {
+	// cache session, per
+	// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
+	sess *session.Session
+}
 
 func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 	return []brokerapi.Service{
@@ -53,7 +57,7 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	// follows this example
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
 
-	svc := organizations.New(session.New())
+	svc := organizations.New(b.sess)
 	input := &organizations.CreateAccountInput{
 		// TODO don't hard-code these
 		AccountName: aws.String("Production Account"),
@@ -124,4 +128,8 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 
 func createBroker() brokerapi.ServiceBroker {
 	return awsAccountBroker{}
+}
+
+func newAWSAccountBroker() awsAccountBroker {
+	return awsAccountBroker{sess: session.New()}
 }
