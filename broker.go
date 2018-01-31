@@ -12,14 +12,46 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 )
 
+type notImplementedError struct{}
+
+func (e notImplementedError) Error() string {
+	return "Not implemented"
+}
+
 type awsAccountBroker struct{}
 
 func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
-
+	return []brokerapi.Service{
+		brokerapi.Service{
+			// TODO change to GUID?
+			// https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md#service-objects
+			ID:          "aws-account-broker",
+			Name:        "aws-account",
+			Description: "Provisions AWS accounts under the organization",
+			Bindable:    true,
+			// TODO add plans
+			Plans: []brokerapi.ServicePlan{},
+			Metadata: &brokerapi.ServiceMetadata{
+				DisplayName: "AWS account broker",
+				// LongDescription:     "...",
+				DocumentationUrl: "https://github.com/GSA/aws-account-broker",
+				SupportUrl:       "https://github.com/GSA/aws-account-broker/issues/new",
+				// ImageUrl:            "...",
+				ProviderDisplayName: "The IDI team in GSA IT",
+			},
+			Tags: []string{
+				"aws",
+				"iaas",
+			},
+		},
+	}
 }
 
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
 	spec := brokerapi.ProvisionedServiceSpec{}
+
+	// follows this example
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
 
 	svc := organizations.New(session.New())
 	input := &organizations.CreateAccountInput{
@@ -60,6 +92,9 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 		return spec, err
 	}
 
+	// TODO do something with this
+	fmt.Println(result)
+
 	return spec, nil
 }
 
@@ -69,19 +104,22 @@ func (b awsAccountBroker) Deprovision(ctx context.Context, instanceID string, de
 }
 
 func (b awsAccountBroker) Bind(ctx context.Context, instanceID, bindingID string, details brokerapi.BindDetails) (brokerapi.Binding, error) {
-
+	binding := brokerapi.Binding{}
+	return binding, notImplementedError{}
 }
 
 func (b awsAccountBroker) Unbind(ctx context.Context, instanceID, bindingID string, details brokerapi.UnbindDetails) error {
-
+	return notImplementedError{}
 }
 
 func (b awsAccountBroker) Update(ctx context.Context, instanceID string, details brokerapi.UpdateDetails, asyncAllowed bool) (brokerapi.UpdateServiceSpec, error) {
-
+	spec := brokerapi.UpdateServiceSpec{}
+	return spec, notImplementedError{}
 }
 
 func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
-
+	op := brokerapi.LastOperation{}
+	return op, notImplementedError{}
 }
 
 func createBroker() brokerapi.ServiceBroker {
