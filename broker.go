@@ -130,6 +130,7 @@ func createBroker() brokerapi.ServiceBroker {
 	return awsAccountBroker{}
 }
 
-func newAWSAccountBroker() awsAccountBroker {
-	return awsAccountBroker{sess: session.New()}
+func newAWSAccountBroker() (awsAccountBroker, error) {
+	sess, err := session.NewSession()
+	return awsAccountBroker{sess}, err
 }
