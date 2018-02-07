@@ -25,6 +25,55 @@ type awsAccountBroker struct {
 	svc  *organizations.Organizations
 }
 
+// TODO accept an ID - currently just gets the first one
+func (b awsAccountBroker) getAccountStatus() (*organizations.CreateAccountStatus, error) {
+	input := &organizations.ListCreateAccountStatusInput{}
+	input.SetMaxResults(1)
+
+	result, err := b.svc.ListCreateAccountStatus(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case organizations.ErrCodeAccessDeniedException:
+				fmt.Println(organizations.ErrCodeAccessDeniedException, aerr.Error())
+			case organizations.ErrCodeAWSOrganizationsNotInUseException:
+				fmt.Println(organizations.ErrCodeAWSOrganizationsNotInUseException, aerr.Error())
+			case organizations.ErrCodeInvalidInputException:
+				fmt.Println(organizations.ErrCodeInvalidInputException, aerr.Error())
+			case organizations.ErrCodeServiceException:
+				fmt.Println(organizations.ErrCodeServiceException, aerr.Error())
+			case organizations.ErrCodeTooManyRequestsException:
+				fmt.Println(organizations.ErrCodeTooManyRequestsException, aerr.Error())
+			default:
+				fmt.Println(aerr.Error())
+			}
+		} else {
+			// Print the error, cast err to awserr.Error to get the Code and
+			// Message from an error.
+			fmt.Println(err.Error())
+		}
+
+		return nil, err
+	}
+
+	fmt.Println(result)
+
+	return result.CreateAccountStatuses[0], nil
+}
+
+func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) brokerapi.LastOperationState {
+	switch *status.State {
+	case "IN_PROGRESS":
+		return brokerapi.InProgress
+	case "SUCCEEDED":
+		return brokerapi.Succeeded
+	}
+
+	// fallback, including "FAILED"
+	// https://docs.aws.amazon.com/organizations/latest/APIReference/API_ListCreateAccountStatus.html#API_ListCreateAccountStatus_RequestSyntax
+	return brokerapi.Failed
+}
+
 func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 	return []brokerapi.Service{
 		brokerapi.Service{
@@ -123,8 +172,14 @@ func (b awsAccountBroker) Update(ctx context.Context, instanceID string, details
 }
 
 func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
-	op := brokerapi.LastOperation{}
-	return op, notImplementedError{}
+	awsStatus, err := b.getAccountStatus()
+	brokerState := awsStatusToBrokerInstanceState(*awsStatus)
+
+	op := brokerapi.LastOperation{
+		State:       brokerState,
+		Description: awsStatus.GoString(),
+	}
+	return op, err
 }
 
 func createBroker() brokerapi.ServiceBroker {
@@ -136,5 +191,3 @@ func newAWSAccountBroker() (awsAccountBroker, error) {
 	svc := organizations.New(sess)
 	return awsAccountBroker{sess, svc}, err
 }
-
-// TODO check status
