@@ -102,8 +102,10 @@ func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 }
 
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
-	// TODO fill out
 	spec := brokerapi.ProvisionedServiceSpec{}
+	if !asyncAllowed {
+		return spec, errors.New("Accounts can only be created asynchronously")
+	}
 
 	// follows this example
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
@@ -146,9 +148,10 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 		return spec, err
 	}
 
-	// TODO do something with this
 	fmt.Println(result)
 
+	spec.IsAsync = true
+	// TODO set OperationData?
 	return spec, nil
 }
 
