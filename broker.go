@@ -22,6 +22,7 @@ type awsAccountBroker struct {
 	// cache session, per
 	// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 	sess *session.Session
+	svc  *organizations.Organizations
 }
 
 func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
@@ -58,14 +59,13 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	// follows this example
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
 
-	svc := organizations.New(b.sess)
 	input := &organizations.CreateAccountInput{
 		// TODO don't hard-code these
 		AccountName: aws.String("Production Account"),
 		Email:       aws.String("susan@example.com"),
 	}
 
-	result, err := svc.CreateAccount(input)
+	result, err := b.svc.CreateAccount(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -133,7 +133,8 @@ func createBroker() brokerapi.ServiceBroker {
 
 func newAWSAccountBroker() (awsAccountBroker, error) {
 	sess, err := session.NewSession()
-	return awsAccountBroker{sess}, err
+	svc := organizations.New(sess)
+	return awsAccountBroker{sess, svc}, err
 }
 
 // TODO check status
