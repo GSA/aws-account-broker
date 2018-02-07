@@ -10,10 +10,7 @@ import (
 )
 
 type accountManager struct {
-	// cache session, per
-	// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
-	sess *session.Session
-	svc  *organizations.Organizations
+	svc *organizations.Organizations
 }
 
 func (am accountManager) CreateAccount(acctName string, email string) (*organizations.CreateAccountOutput, error) {
@@ -96,7 +93,9 @@ func (am accountManager) GetAccountStatus() (*organizations.CreateAccountStatus,
 }
 
 func newAccountManager() (accountManager, error) {
+	// cache session, per
+	// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 	sess, err := session.NewSession()
 	svc := organizations.New(sess)
-	return accountManager{sess, svc}, err
+	return accountManager{svc}, err
 }
