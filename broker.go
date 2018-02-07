@@ -3,11 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/pivotal-cf/brokerapi"
 )
@@ -19,46 +15,7 @@ func (e notImplementedError) Error() string {
 }
 
 type awsAccountBroker struct {
-	// cache session, per
-	// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
-	sess *session.Session
-	svc  *organizations.Organizations
-}
-
-// TODO accept an ID - currently just gets the first one
-func (b awsAccountBroker) getAccountStatus() (*organizations.CreateAccountStatus, error) {
-	input := &organizations.ListCreateAccountStatusInput{}
-	input.SetMaxResults(1)
-
-	result, err := b.svc.ListCreateAccountStatus(input)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case organizations.ErrCodeAccessDeniedException:
-				fmt.Println(organizations.ErrCodeAccessDeniedException, aerr.Error())
-			case organizations.ErrCodeAWSOrganizationsNotInUseException:
-				fmt.Println(organizations.ErrCodeAWSOrganizationsNotInUseException, aerr.Error())
-			case organizations.ErrCodeInvalidInputException:
-				fmt.Println(organizations.ErrCodeInvalidInputException, aerr.Error())
-			case organizations.ErrCodeServiceException:
-				fmt.Println(organizations.ErrCodeServiceException, aerr.Error())
-			case organizations.ErrCodeTooManyRequestsException:
-				fmt.Println(organizations.ErrCodeTooManyRequestsException, aerr.Error())
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
-		}
-
-		return nil, err
-	}
-
-	fmt.Println(result)
-
-	return result.CreateAccountStatuses[0], nil
+	mgr accountManager
 }
 
 func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) brokerapi.LastOperationState {
@@ -110,45 +67,12 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	// follows this example
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
 
-	input := &organizations.CreateAccountInput{
-		// TODO don't hard-code these
-		AccountName: aws.String("Production Account"),
-		Email:       aws.String("susan@example.com"),
-	}
-
-	result, err := b.svc.CreateAccount(input)
+	// TODO don't hard-code these
+	_, err := b.mgr.CreateAccount("Production Account", "susan@example.com")
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case organizations.ErrCodeAccessDeniedException:
-				fmt.Println(organizations.ErrCodeAccessDeniedException, aerr.Error())
-			case organizations.ErrCodeAWSOrganizationsNotInUseException:
-				fmt.Println(organizations.ErrCodeAWSOrganizationsNotInUseException, aerr.Error())
-			case organizations.ErrCodeConcurrentModificationException:
-				fmt.Println(organizations.ErrCodeConcurrentModificationException, aerr.Error())
-			case organizations.ErrCodeConstraintViolationException:
-				fmt.Println(organizations.ErrCodeConstraintViolationException, aerr.Error())
-			case organizations.ErrCodeInvalidInputException:
-				fmt.Println(organizations.ErrCodeInvalidInputException, aerr.Error())
-			case organizations.ErrCodeFinalizingOrganizationException:
-				fmt.Println(organizations.ErrCodeFinalizingOrganizationException, aerr.Error())
-			case organizations.ErrCodeServiceException:
-				fmt.Println(organizations.ErrCodeServiceException, aerr.Error())
-			case organizations.ErrCodeTooManyRequestsException:
-				fmt.Println(organizations.ErrCodeTooManyRequestsException, aerr.Error())
-			default:
-				fmt.Println(aerr.Error())
-			}
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			fmt.Println(err.Error())
-		}
-
 		return spec, err
 	}
-
-	fmt.Println(result)
+	// TODO use the result?
 
 	spec.IsAsync = true
 	// TODO set OperationData?
@@ -175,7 +99,7 @@ func (b awsAccountBroker) Update(ctx context.Context, instanceID string, details
 }
 
 func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
-	awsStatus, err := b.getAccountStatus()
+	awsStatus, err := b.mgr.GetAccountStatus()
 	brokerState := awsStatusToBrokerInstanceState(*awsStatus)
 
 	op := brokerapi.LastOperation{
@@ -190,7 +114,6 @@ func createBroker() brokerapi.ServiceBroker {
 }
 
 func newAWSAccountBroker() (awsAccountBroker, error) {
-	sess, err := session.NewSession()
-	svc := organizations.New(sess)
-	return awsAccountBroker{sess, svc}, err
+	mgr, err := newAccountManager()
+	return awsAccountBroker{mgr}, err
 }
