@@ -109,11 +109,7 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 	return op, err
 }
 
-func createBroker() brokerapi.ServiceBroker {
-	return awsAccountBroker{}
-}
-
-func newAWSAccountBroker() (awsAccountBroker, error) {
+func NewAWSAccountBroker() (awsAccountBroker, error) {
 	mgr, err := newAccountManager()
 	return awsAccountBroker{mgr}, err
 }

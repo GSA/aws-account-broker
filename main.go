@@ -9,13 +9,16 @@ import (
 )
 
 func main() {
-	broker := awsAccountBroker{}
-
 	logger := lager.NewLogger("aws-account-broker")
 	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
 
 	logger.Info("Starting AWS account broker")
+
+	broker, err := NewAWSAccountBroker()
+	if err != nil {
+		logger.Fatal("Problem starting broker", err)
+	}
 
 	creds := brokerapi.BrokerCredentials{
 		// TODO specify these another way
