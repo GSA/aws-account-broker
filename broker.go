@@ -52,6 +52,7 @@ func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 }
 
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
+	// TODO fill out
 	spec := brokerapi.ProvisionedServiceSpec{}
 
 	// follows this example
@@ -130,6 +131,9 @@ func createBroker() brokerapi.ServiceBroker {
 	return awsAccountBroker{}
 }
 
-func newAWSAccountBroker() awsAccountBroker {
-	return awsAccountBroker{sess: session.New()}
+func newAWSAccountBroker() (awsAccountBroker, error) {
+	sess, err := session.NewSession()
+	return awsAccountBroker{sess}, err
 }
+
+// TODO check status
