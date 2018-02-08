@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/pivotal-cf/brokerapi"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAWSStatusToBrokerInstanceState(t *testing.T) {
@@ -19,8 +20,7 @@ func TestAWSStatusToBrokerInstanceState(t *testing.T) {
 		awsStatusObj := organizations.CreateAccountStatus{
 			State: &awsStatus,
 		}
-		if awsStatusToBrokerInstanceState(awsStatusObj) != expected {
-			t.Fatal("doesn't match")
-		}
+		actual := awsStatusToBrokerInstanceState(awsStatusObj)
+		assert.Equal(t, expected, actual)
 	}
 }
