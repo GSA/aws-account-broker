@@ -68,7 +68,7 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
 
 	// TODO don't hard-code these
-	_, err := b.mgr.CreateAccount("Production Account", "susan@example.com")
+	_, err := b.mgr.CreateAccount("Service Broker account", "aidan.feldman+broker@gsa.gov")
 	if err != nil {
 		return spec, err
 	}

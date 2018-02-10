@@ -7,10 +7,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/organizations"
+	"github.com/aws/aws-sdk-go/service/organizations/organizationsiface"
 )
 
 type accountManager struct {
-	svc *organizations.Organizations
+	svc organizationsiface.OrganizationsAPI
 }
 
 func (am accountManager) CreateAccount(acctName string, email string) (*organizations.CreateAccountOutput, error) {
