@@ -63,7 +63,7 @@ func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
 	spec := brokerapi.ProvisionedServiceSpec{}
 	if !asyncAllowed {
-		return spec, errors.New("Accounts can only be created asynchronously")
+		return spec, brokerapi.ErrAsyncRequired
 	}
 
 	// TODO don't hard-code these

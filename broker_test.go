@@ -28,6 +28,13 @@ func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccoun
 	return &output, nil
 }
 
+func mockBroker() awsAccountBroker {
+	svc := mockOrganizationsClient{}
+	mgr := accountManager{svc}
+	logger := lager.NewLogger("test")
+	return awsAccountBroker{mgr, logger}
+}
+
 func TestAWSStatusToBrokerInstanceState(t *testing.T) {
 	cases := map[string]brokerapi.LastOperationState{
 		"IN_PROGRESS": brokerapi.InProgress,
@@ -45,11 +52,8 @@ func TestAWSStatusToBrokerInstanceState(t *testing.T) {
 	}
 }
 
-func TestProvision(t *testing.T) {
-	svc := mockOrganizationsClient{}
-	mgr := accountManager{svc}
-	logger := lager.NewLogger("test")
-	broker := awsAccountBroker{mgr, logger}
+func TestProvisionSuccess(t *testing.T) {
+	broker := mockBroker()
 
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
@@ -58,4 +62,15 @@ func TestProvision(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.True(t, spec.IsAsync)
+}
+
+func TestProvisionSync(t *testing.T) {
+	broker := mockBroker()
+
+	ctx := context.Background()
+	details := brokerapi.ProvisionDetails{}
+
+	_, err := broker.Provision(ctx, "123", details, false)
+
+	assert.Error(t, err)
 }
