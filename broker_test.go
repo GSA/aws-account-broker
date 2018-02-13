@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/organizations"
@@ -13,9 +14,16 @@ type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
 }
 
-func (m mockOrganizationsClient) AcceptHandshake(input *organizations.AcceptHandshakeInput) (*organizations.AcceptHandshakeOutput, error) {
-	// TODO mock response/functionality
-	output := organizations.AcceptHandshakeOutput{}
+func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccountInput) (*organizations.CreateAccountOutput, error) {
+	state := organizations.CreateAccountStateInProgress
+
+	output := organizations.CreateAccountOutput{
+		CreateAccountStatus: &organizations.CreateAccountStatus{
+			AccountName: input.AccountName,
+			State:       &state,
+		},
+	}
+
 	return &output, nil
 }
 
@@ -41,5 +49,11 @@ func TestProvision(t *testing.T) {
 	mgr := accountManager{svc}
 	broker := awsAccountBroker{mgr}
 
-	broker.Provision(ctx, instanceID, details, asyncAllowed)
+	ctx := context.Background()
+	details := brokerapi.ProvisionDetails{}
+
+	spec, err := broker.Provision(ctx, "123", details, true)
+
+	assert.NoError(t, err)
+	assert.True(t, spec.IsAsync)
 }
