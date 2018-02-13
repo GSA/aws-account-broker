@@ -31,5 +31,7 @@ func main() {
 
 	host := "127.0.0.1"
 	port := "8080"
-	logger.Fatal("http-listen", http.ListenAndServe(host+":"+port, nil))
+	origin := host + ":" + port
+	logger.Info("Broker listening at " + origin)
+	logger.Fatal("http-listen", http.ListenAndServe(origin, nil))
 }
