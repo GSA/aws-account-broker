@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/aws/aws-sdk-go/service/organizations/organizationsiface"
 	"github.com/pivotal-cf/brokerapi"
@@ -47,7 +48,8 @@ func TestAWSStatusToBrokerInstanceState(t *testing.T) {
 func TestProvision(t *testing.T) {
 	svc := mockOrganizationsClient{}
 	mgr := accountManager{svc}
-	broker := awsAccountBroker{mgr}
+	logger := lager.NewLogger("test")
+	broker := awsAccountBroker{mgr, logger}
 
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}

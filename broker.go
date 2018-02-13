@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/pivotal-cf/brokerapi"
 )
@@ -15,7 +16,8 @@ func (e notImplementedError) Error() string {
 }
 
 type awsAccountBroker struct {
-	mgr accountManager
+	mgr    accountManager
+	logger lager.Logger
 }
 
 func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) brokerapi.LastOperationState {
@@ -64,15 +66,15 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 		return spec, errors.New("Accounts can only be created asynchronously")
 	}
 
-	// follows this example
-	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
-
 	// TODO don't hard-code these
-	_, err := b.mgr.CreateAccount("Service Broker account", "aidan.feldman+broker@gsa.gov")
+	email := "aidan.feldman+broker@gsa.gov"
+	_, err := b.mgr.CreateAccount("Service Broker account", email)
 	if err != nil {
 		return spec, err
 	}
 	// TODO use the result?
+
+	b.logger.Info("Account created for " + email)
 
 	spec.IsAsync = true
 	// TODO set OperationData?
@@ -109,7 +111,7 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 	return op, err
 }
 
-func NewAWSAccountBroker() (awsAccountBroker, error) {
+func NewAWSAccountBroker(logger lager.Logger) (awsAccountBroker, error) {
 	mgr, err := newAccountManager()
-	return awsAccountBroker{mgr}, err
+	return awsAccountBroker{mgr, logger}, err
 }

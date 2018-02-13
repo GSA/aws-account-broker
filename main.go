@@ -15,7 +15,7 @@ func main() {
 
 	logger.Info("Starting AWS account broker")
 
-	broker, err := NewAWSAccountBroker()
+	broker, err := NewAWSAccountBroker(logger)
 	if err != nil {
 		logger.Fatal("Problem starting broker", err)
 	}

@@ -15,6 +15,9 @@ type accountManager struct {
 }
 
 func (am accountManager) CreateAccount(acctName string, email string) (*organizations.CreateAccountOutput, error) {
+	// follows this example
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
+
 	input := &organizations.CreateAccountInput{
 		AccountName: aws.String(acctName),
 		Email:       aws.String(email),
