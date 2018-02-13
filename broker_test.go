@@ -13,8 +13,10 @@ type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
 }
 
-func (m *mockOrganizationsClient) AcceptHandshake(input *organizations.AcceptHandshakeInput) (*organizations.AcceptHandshakeOutput, error) {
-	// mock response/functionality
+func (m mockOrganizationsClient) AcceptHandshake(input *organizations.AcceptHandshakeInput) (*organizations.AcceptHandshakeOutput, error) {
+	// TODO mock response/functionality
+	output := organizations.AcceptHandshakeOutput{}
+	return &output, nil
 }
 
 func TestAWSStatusToBrokerInstanceState(t *testing.T) {
@@ -38,4 +40,6 @@ func TestProvision(t *testing.T) {
 	svc := mockOrganizationsClient{}
 	mgr := accountManager{svc}
 	broker := awsAccountBroker{mgr}
+
+	broker.Provision(ctx, instanceID, details, asyncAllowed)
 }
