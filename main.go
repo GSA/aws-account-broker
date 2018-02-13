@@ -8,11 +8,15 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 )
 
-func main() {
+func makeLogger() lager.Logger {
 	logger := lager.NewLogger("aws-account-broker")
 	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
+	return logger
+}
 
+func main() {
+	logger := makeLogger()
 	logger.Info("Starting AWS account broker")
 
 	broker, err := NewAWSAccountBroker(logger)
