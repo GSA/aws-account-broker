@@ -52,9 +52,17 @@ func TestAWSStatusToBrokerInstanceState(t *testing.T) {
 	}
 }
 
+func TestServices(t *testing.T) {
+	broker := mockBroker()
+	ctx := context.Background()
+
+	services := broker.Services(ctx)
+
+	assert.Len(t, services, 1)
+}
+
 func TestProvisionSuccess(t *testing.T) {
 	broker := mockBroker()
-
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
@@ -66,7 +74,6 @@ func TestProvisionSuccess(t *testing.T) {
 
 func TestProvisionSync(t *testing.T) {
 	broker := mockBroker()
-
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
