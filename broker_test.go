@@ -56,6 +56,11 @@ func TestAWSStatusToBrokerInstanceState(t *testing.T) {
 	}
 }
 
+func TestGenerateUniqueEmail(t *testing.T) {
+	assert.Equal(t, generateUniqueEmail("foo@bar.com", "1"), "foo+1@bar.com")
+	assert.Equal(t, generateUniqueEmail("foo.bar@baz.com", "1"), "foo.bar+1@baz.com")
+}
+
 func TestServices(t *testing.T) {
 	// values are arbitrary here
 	broker := mockBroker(nil, organizations.CreateAccountStateInProgress)

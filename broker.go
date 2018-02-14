@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
@@ -31,6 +33,11 @@ func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) br
 	// fallback, including "FAILED"
 	// https://docs.aws.amazon.com/organizations/latest/APIReference/API_ListCreateAccountStatus.html#API_ListCreateAccountStatus_RequestSyntax
 	return brokerapi.Failed
+}
+
+func generateUniqueEmail(baseEmail string, id string) string {
+	emailParts := strings.SplitN(baseEmail, "@", 2)
+	return fmt.Sprintf("%s+%s@%s", emailParts[0], id, emailParts[1])
 }
 
 func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
@@ -67,7 +74,8 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	}
 
 	// TODO don't hard-code these
-	email := "aidan.feldman+broker@gsa.gov"
+	baseEmail := "aidan.feldman@gsa.gov"
+	email := generateUniqueEmail(baseEmail, instanceID)
 	_, err := b.mgr.CreateAccount("Service Broker account", email)
 	if err != nil {
 		return spec, err
