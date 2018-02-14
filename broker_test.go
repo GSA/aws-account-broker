@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"code.cloudfoundry.org/lager"
@@ -13,23 +14,26 @@ import (
 
 type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
+	createErr   error
+	createState string
 }
 
 func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccountInput) (*organizations.CreateAccountOutput, error) {
-	state := organizations.CreateAccountStateInProgress
-
 	output := organizations.CreateAccountOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
 			AccountName: input.AccountName,
-			State:       &state,
+			State:       &m.createState,
 		},
 	}
 
-	return &output, nil
+	return &output, m.createErr
 }
 
-func mockBroker() awsAccountBroker {
-	svc := mockOrganizationsClient{}
+func mockBroker(createErr error, createState string) awsAccountBroker {
+	svc := mockOrganizationsClient{
+		createErr:   createErr,
+		createState: createState,
+	}
 	mgr := accountManager{svc}
 	logger := lager.NewLogger("test")
 	return awsAccountBroker{mgr, logger}
@@ -53,7 +57,8 @@ func TestAWSStatusToBrokerInstanceState(t *testing.T) {
 }
 
 func TestServices(t *testing.T) {
-	broker := mockBroker()
+	// values are arbitrary here
+	broker := mockBroker(nil, organizations.CreateAccountStateInProgress)
 	ctx := context.Background()
 
 	services := broker.Services(ctx)
@@ -62,7 +67,7 @@ func TestServices(t *testing.T) {
 }
 
 func TestProvisionSuccess(t *testing.T) {
-	broker := mockBroker()
+	broker := mockBroker(nil, organizations.CreateAccountStateInProgress)
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
@@ -72,8 +77,19 @@ func TestProvisionSuccess(t *testing.T) {
 	assert.True(t, spec.IsAsync)
 }
 
+func TestProvisionFail(t *testing.T) {
+	broker := mockBroker(errors.New("failed"), organizations.CreateAccountStateFailed)
+	ctx := context.Background()
+	details := brokerapi.ProvisionDetails{}
+
+	_, err := broker.Provision(ctx, "123", details, true)
+
+	assert.Error(t, err)
+}
+
 func TestProvisionSync(t *testing.T) {
-	broker := mockBroker()
+	// values are arbitrary
+	broker := mockBroker(nil, organizations.CreateAccountStateFailed)
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
