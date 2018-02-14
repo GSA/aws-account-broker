@@ -18,8 +18,9 @@ func (e notImplementedError) Error() string {
 }
 
 type awsAccountBroker struct {
-	mgr    accountManager
-	logger lager.Logger
+	mgr       accountManager
+	baseEmail string
+	logger    lager.Logger
 }
 
 func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) brokerapi.LastOperationState {
@@ -73,9 +74,7 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 		return spec, brokerapi.ErrAsyncRequired
 	}
 
-	// TODO don't hard-code these
-	baseEmail := "aidan.feldman@gsa.gov"
-	email := generateUniqueEmail(baseEmail, instanceID)
+	email := generateUniqueEmail(b.baseEmail, instanceID)
 	_, err := b.mgr.CreateAccount("Service Broker account", email)
 	if err != nil {
 		return spec, err
@@ -119,7 +118,7 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 	return op, err
 }
 
-func NewAWSAccountBroker(logger lager.Logger) (awsAccountBroker, error) {
+func NewAWSAccountBroker(baseEmail string, logger lager.Logger) (awsAccountBroker, error) {
 	mgr, err := newAccountManager()
-	return awsAccountBroker{mgr, logger}, err
+	return awsAccountBroker{mgr, baseEmail, logger}, err
 }

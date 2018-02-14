@@ -19,7 +19,9 @@ func main() {
 	logger := makeLogger()
 	logger.Info("Starting AWS account broker")
 
-	broker, err := NewAWSAccountBroker(logger)
+	// TODO don't hard-code
+	baseEmail := "aidan.feldman@gsa.gov"
+	broker, err := NewAWSAccountBroker(baseEmail, logger)
 	if err != nil {
 		logger.Fatal("Problem starting broker", err)
 	}

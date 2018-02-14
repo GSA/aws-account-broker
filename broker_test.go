@@ -35,8 +35,11 @@ func mockBroker(createErr error, createState string) awsAccountBroker {
 		createState: createState,
 	}
 	mgr := accountManager{svc}
+
+	baseEmail := "foo@bar.com"
 	logger := lager.NewLogger("test")
-	return awsAccountBroker{mgr, logger}
+
+	return awsAccountBroker{mgr, baseEmail, logger}
 }
 
 func TestAWSStatusToBrokerInstanceState(t *testing.T) {
