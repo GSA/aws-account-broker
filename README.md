@@ -6,11 +6,11 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 
 ## Setup
 
-Requires [Go](https://golang.org/). From the repository root:
+Requires [Go](https://golang.org/). From the repository root, run the following. Note that email addresses for AWS accounts need to be unique, so `BASE_EMAIL` (in this example) will be turned into `something+<ID>@some.com`. This works in GMail, at the very least - you may need to confirm with your mail provider.
 
 ```sh
 go install github.com/GSA/aws-account-broker
-aws-account-broker
+BASE_EMAIL=something@some.com aws-account-broker
 ```
 
 You can confirm it's running from another terminal with:
@@ -27,7 +27,7 @@ cd $GOPATH/src/github.com/GSA/aws-account-broker
 # 1. make edits
 
 go install
-aws-account-broker
+BASE_EMAIL=something@some.com aws-account-broker
 
 # 2. go back to 1
 ```

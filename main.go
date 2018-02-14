@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"os"
 
@@ -19,8 +20,11 @@ func main() {
 	logger := makeLogger()
 	logger.Info("Starting AWS account broker")
 
-	// TODO don't hard-code
-	baseEmail := "aidan.feldman@gsa.gov"
+	baseEmail, found := os.LookupEnv("BASE_EMAIL")
+	if !found {
+		logger.Fatal("startup", errors.New("BASE_EMAIL not set"))
+	}
+
 	broker, err := NewAWSAccountBroker(baseEmail, logger)
 	if err != nil {
 		logger.Fatal("Problem starting broker", err)
