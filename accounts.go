@@ -52,6 +52,11 @@ func (am accountManager) CreateAccount(acctName string, email string) (*organiza
 		Email:       aws.String(email),
 	}
 
+	err := input.Validate()
+	if err != nil {
+		return nil, err
+	}
+
 	result, err := am.svc.CreateAccount(input)
 	if err != nil {
 		printErr(err)
@@ -67,6 +72,11 @@ func (am accountManager) CreateAccount(acctName string, email string) (*organiza
 func (am accountManager) GetAccountStatus() (*organizations.CreateAccountStatus, error) {
 	input := &organizations.ListCreateAccountStatusInput{}
 	input.SetMaxResults(1)
+
+	err := input.Validate()
+	if err != nil {
+		return nil, err
+	}
 
 	result, err := am.svc.ListCreateAccountStatus(input)
 	if err != nil {
