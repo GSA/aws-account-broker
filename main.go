@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"net/http"
 	"os"
 
@@ -9,11 +10,21 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 )
 
+var strUser = flag.String("user", "", "User name")
+var strPass = flag.String("pass", "", "Password")
+
 func makeLogger() lager.Logger {
 	logger := lager.NewLogger("aws-account-broker")
 	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
 	return logger
+}
+
+func init() {
+	flag.Parse()
+	// Set up username and password
+	// flag.StringVar(strUser, "user", "user", "User name")
+	// flag.StringVar(strPass, "pass", "pass", "Password")
 }
 
 func main() {
@@ -31,9 +42,8 @@ func main() {
 	}
 
 	creds := brokerapi.BrokerCredentials{
-		// TODO specify these another way
-		Username: "user",
-		Password: "pass",
+		Username: *strUser,
+		Password: *strPass,
 	}
 
 	brokerAPI := brokerapi.New(broker, logger, creds)

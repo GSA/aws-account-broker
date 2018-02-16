@@ -10,14 +10,16 @@ Requires [Go](https://golang.org/). From the repository root, run the following.
 
 ```sh
 go install github.com/GSA/aws-account-broker
-BASE_EMAIL=something@some.com aws-account-broker
+BASE_EMAIL=something@some.com aws-account-broker -user=<a username> -pass=<a password>
 ```
 
 You can confirm it's running from another terminal with:
 
 ```sh
-curl --user user:pass http://localhost:8080/v2/catalog
+curl --user <user>:<pass> http://localhost:8080/v2/catalog
 ```
+
+Make sure to use the user and pass that you specified in the run command above.
 
 ### Development
 
@@ -27,7 +29,7 @@ cd $GOPATH/src/github.com/GSA/aws-account-broker
 # 1. make edits
 
 go install
-BASE_EMAIL=something@some.com aws-account-broker
+BASE_EMAIL=something@some.com aws-account-broker -user=<a username> -pass=<a password>
 
 # 2. go back to 1
 ```
