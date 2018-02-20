@@ -6,28 +6,53 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 
 ## Setup
 
-Requires [Go](https://golang.org/). From the repository root, run the following. Note that email addresses for AWS accounts need to be unique, so `BASE_EMAIL` (in this example) will be turned into `something+<ID>@some.com`. This works in GMail, at the very least - you may need to confirm with your mail provider.
+1. Install system dependencies.
+    1. [Go](https://golang.org/)
+    1. [Dep](https://golang.github.io/dep/docs/installation.html)
+1. Clone the repository.
 
-```sh
-go install github.com/GSA/aws-account-broker
-BASE_EMAIL=something@some.com aws-account-broker
-```
+    ```sh
+    cd $(go env GOPATH)/src
+    mkdir -p GSA
+    cd GSA
+    git clone https://github.com/GSA/aws-account-broker.git
+    cd aws-account-broker
+    ```
 
-You can confirm it's running from another terminal with:
+1. Install Go package dependencies.
 
-```sh
-curl --user user:pass http://localhost:8080/v2/catalog
-```
+    ```sh
+    dep ensure
+    ```
+
+1. Compile the broker.
+
+    ```sh
+    go build
+    ```
+
+1. Pick a base email.
+    * Email addresses for AWS accounts need to be unique, so `BASE_EMAIL` (below) will be turned into `something+<ID>@some.com`. This works in GMail, at the very least - you may need to confirm with your mail provider.
+1. Run the broker.
+
+    ```sh
+    BASE_EMAIL=something@some.com ./aws-account-broker
+    ```
+
+1. Confirm it's running and responding to requests. From another terminal, run:
+
+    ```sh
+    curl --user user:pass http://localhost:8080/v2/catalog
+    ```
 
 ### Development
 
 ```sh
-cd $GOPATH/src/github.com/GSA/aws-account-broker
-
 # 1. make edits
 
-go install
-BASE_EMAIL=something@some.com aws-account-broker
+# 2. build and run
+go build
+BASE_EMAIL=something@some.com ./aws-account-broker
 
-# 2. go back to 1
+# 3. CONTROL+C, then go back to 1
 ```
