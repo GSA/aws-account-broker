@@ -13,13 +13,6 @@ import (
 var strUser = flag.String("user", "", "User name")
 var strPass = flag.String("pass", "", "Password")
 
-func makeLogger() lager.Logger {
-	logger := lager.NewLogger("aws-account-broker")
-	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
-	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
-	return logger
-}
-
 func init() {
 	flag.Parse()
 	// Set up username and password
@@ -28,7 +21,9 @@ func init() {
 }
 
 func main() {
-	logger := makeLogger()
+	logger := lager.NewLogger("aws-account-broker")
+	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
+	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
 	logger.Info("Starting AWS account broker")
 
 	baseEmail, found := os.LookupEnv("BASE_EMAIL")
