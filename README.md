@@ -45,7 +45,20 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
     curl --user user:pass http://localhost:8080/v2/catalog
     ```
 
-Make sure to use the user and pass that you specified in the run command above.
+    Make sure to use the user and pass that you specified in the run command above.
+
+1. To create an account (also known as [Provisioning](https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md#provisioning)):
+
+    ```sh
+    curl "http://user:pass@localhost:8080/v2/service_instances/<INSTANCE_ID>?accepts_incomplete=true" -d '{
+      "service_id": "aws-account-broker",
+      "plan_id": "IGNORED",
+      "organization_guid": "IGNORED",
+      "space_guid": "IGNORED"
+    }' -X PUT -H "X-Broker-API-Version: 2.13" -H "Content-Type: application/json"
+    ```
+
+    Note that the `INSTANCE_ID` needs to be unique value for all the accounts in your Organization, as it's used to produce the unique email. The command also contains some dummy parameters - marked as `IGNORED` - which are required by the API spec but not yet used.
 
 ### Development
 
