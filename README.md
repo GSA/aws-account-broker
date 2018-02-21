@@ -36,7 +36,7 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 1. Run the broker.
 
     ```sh
-    BASE_EMAIL=something@some.com aws-account-broker -user=<a username> -pass=<a password>
+    BASE_EMAIL=something@some.com ./aws-account-broker -user=<a username> -pass=<a password>
     ```
 
 1. Confirm it's running and responding to requests. From another terminal, run:
@@ -54,7 +54,7 @@ Make sure to use the user and pass that you specified in the run command above.
 
   ```sh
   go build
-  BASE_EMAIL=something@some.com aws-account-broker -user=<a username> -pass=<a password>
+  BASE_EMAIL=something@some.com ./aws-account-broker -user=<a username> -pass=<a password>
   ```
 
 3. CONTROL+C, then go back to 1
