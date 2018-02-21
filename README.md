@@ -8,13 +8,13 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 
 1. Install system dependencies.
     1. [Go](https://golang.org/)
-    1. [Dep](https://golang.github.io/dep/docs/installation.html)
+    1. [Dep](https://golang.github.io/dep/docs/installation.html) (`go get -u github.com/golang/dep/cmd/dep`)
 1. Clone the repository.
 
     ```sh
-    cd $(go env GOPATH)/src
-    mkdir -p GSA
-    cd GSA
+    export GOPATH=~/go # or whatever go workspace you prefer
+    mkdir -p $GOPATH/src/github.com/GSA
+    cd $GOPATH/src/github.com/GSA
     git clone https://github.com/GSA/aws-account-broker.git
     cd aws-account-broker
     ```
