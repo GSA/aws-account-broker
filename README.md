@@ -36,7 +36,7 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 1. Run the broker.
 
     ```sh
-    BASE_EMAIL=something@some.com ./aws-account-broker
+    BASE_EMAIL=something@some.com ./aws-account-broker -user=<a username> -pass=<a password>
     ```
 
 1. Confirm it's running and responding to requests. From another terminal, run:
@@ -45,14 +45,16 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
     curl --user user:pass http://localhost:8080/v2/catalog
     ```
 
+Make sure to use the user and pass that you specified in the run command above.
+
 ### Development
 
-```sh
-# 1. make edits
+1. make edits
+2. build and run
 
-# 2. build and run
-go build
-BASE_EMAIL=something@some.com ./aws-account-broker
+  ```sh
+  go build
+  BASE_EMAIL=something@some.com ./aws-account-broker -user=<a username> -pass=<a password>
+  ```
 
-# 3. CONTROL+C, then go back to 1
-```
+3. CONTROL+C, then go back to 1
