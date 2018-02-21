@@ -9,6 +9,8 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/pivotal-cf/brokerapi"
+	"github.com/jinzhu/gorm"
+  _ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 type notImplementedError struct{}
@@ -68,6 +70,12 @@ func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 	}
 }
 
+type serviceInstance struct {
+  gorm.Model
+  InstanceId string
+  RequestId string
+}
+
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
 	spec := brokerapi.ProvisionedServiceSpec{}
 	if !asyncAllowed {
@@ -109,7 +117,18 @@ func (b awsAccountBroker) Update(ctx context.Context, instanceID string, details
 
 func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
 	// TODO Get RequestID based on ServiceID from DB
-	awsStatus, err := b.mgr.GetAccountStatus("car-9f57a600103611e88d8f50843ec7f68d")
+	b.logger.Info("instanceID: " + instanceID)
+	db, err := gorm.Open("sqlite3", "aws-account-broker.db")
+  if err != nil {
+		panic("failed to connect database")
+	}
+	defer db.Close()
+
+	var instance serviceInstance
+  db.First(&instance, "instance_id = ?", instanceID)
+  b.logger.Info("RequestId: " + instance.RequestId)
+
+	awsStatus, err := b.mgr.GetAccountStatus(instance.RequestId)
 	brokerState := awsStatusToBrokerInstanceState(*awsStatus)
 
 	op := brokerapi.LastOperation{
