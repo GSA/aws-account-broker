@@ -23,6 +23,7 @@ type awsAccountBroker struct {
 	mgr       accountManager
 	baseEmail string
 	logger    lager.Logger
+	db 				*gorm.DB
 }
 
 func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) brokerapi.LastOperationState {
@@ -83,13 +84,16 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	}
 
 	email := generateUniqueEmail(b.baseEmail, instanceID)
-	_, err := b.mgr.CreateAccount("Service Broker account", email)
+	createResult, err := b.mgr.CreateAccount(instanceID, email)
 	if err != nil {
 		return spec, err
 	}
-	// TODO use the result?
 
 	b.logger.Info("Account created for " + email)
+	var requestID = *createResult.CreateAccountStatus.Id
+	b.logger.Info("RequestId: " + requestID)
+
+	b.db.Create(&serviceInstance{InstanceId: instanceID, RequestId: requestID})
 
 	spec.IsAsync = true
 	// TODO set OperationData?
@@ -116,17 +120,9 @@ func (b awsAccountBroker) Update(ctx context.Context, instanceID string, details
 }
 
 func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
-	// TODO Get RequestID based on ServiceID from DB
-	b.logger.Info("instanceID: " + instanceID)
-	db, err := gorm.Open("sqlite3", "aws-account-broker.db")
-  if err != nil {
-		panic("failed to connect database")
-	}
-	defer db.Close()
 
 	var instance serviceInstance
-  db.First(&instance, "instance_id = ?", instanceID)
-  b.logger.Info("RequestId: " + instance.RequestId)
+  b.db.First(&instance, "instance_id = ?", instanceID)
 
 	awsStatus, err := b.mgr.GetAccountStatus(instance.RequestId)
 	brokerState := awsStatusToBrokerInstanceState(*awsStatus)
@@ -138,7 +134,7 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 	return op, err
 }
 
-func NewAWSAccountBroker(baseEmail string, logger lager.Logger) (awsAccountBroker, error) {
+func NewAWSAccountBroker(baseEmail string, logger lager.Logger, db *gorm.DB) (awsAccountBroker, error) {
 	mgr, err := newAccountManager()
-	return awsAccountBroker{mgr, baseEmail, logger}, err
+	return awsAccountBroker{mgr, baseEmail, logger, db}, err
 }

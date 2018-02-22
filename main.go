@@ -8,6 +8,8 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal-cf/brokerapi"
+	"github.com/jinzhu/gorm"
+  _ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 var strUser = flag.String("user", "", "User name")
@@ -31,7 +33,13 @@ func main() {
 		logger.Fatal("startup", errors.New("BASE_EMAIL not set"))
 	}
 
-	broker, err := NewAWSAccountBroker(baseEmail, logger)
+	db, err := gorm.Open("sqlite3", "aws-account-broker.db")
+  if err != nil {
+	  logger.Fatal("startup", errors.New("failed to connect database"))
+  }
+  defer db.Close()
+
+	broker, err := NewAWSAccountBroker(baseEmail, logger, db)
 	if err != nil {
 		logger.Fatal("Problem starting broker", err)
 	}
