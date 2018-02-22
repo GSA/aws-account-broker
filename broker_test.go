@@ -8,12 +8,15 @@ import (
 	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/aws/aws-sdk-go/service/organizations/organizationsiface"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/stretchr/testify/assert"
 )
 
 type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
+	Id          string
 	createErr   error
 	createState string
 }
@@ -21,6 +24,7 @@ type mockOrganizationsClient struct {
 func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccountInput) (*organizations.CreateAccountOutput, error) {
 	output := organizations.CreateAccountOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
+			Id:          &m.Id,
 			AccountName: input.AccountName,
 			State:       &m.createState,
 		},
@@ -39,7 +43,12 @@ func mockBroker(createErr error, createState string) awsAccountBroker {
 	baseEmail := "foo@bar.com"
 	logger := lager.NewLogger("test")
 
-	return awsAccountBroker{mgr, baseEmail, logger}
+	db, err := gorm.Open("sqlite3", "broker_test.db")
+	if err != nil {
+		logger.Fatal("startup", errors.New("failed to connect database"))
+	}
+
+	return awsAccountBroker{mgr, baseEmail, logger, db}
 }
 
 func TestAWSStatusToBrokerInstanceState(t *testing.T) {
