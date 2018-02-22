@@ -8,9 +8,9 @@ import (
 
 	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
-	"github.com/pivotal-cf/brokerapi"
 	"github.com/jinzhu/gorm"
-  _ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/pivotal-cf/brokerapi"
 )
 
 type notImplementedError struct{}
@@ -23,7 +23,7 @@ type awsAccountBroker struct {
 	mgr       accountManager
 	baseEmail string
 	logger    lager.Logger
-	db 				*gorm.DB
+	db        *gorm.DB
 }
 
 func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) brokerapi.LastOperationState {
@@ -72,9 +72,9 @@ func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 }
 
 type serviceInstance struct {
-  gorm.Model
-  InstanceId string
-  RequestId string
+	gorm.Model
+	InstanceId string
+	RequestId  string
 }
 
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
@@ -122,7 +122,7 @@ func (b awsAccountBroker) Update(ctx context.Context, instanceID string, details
 func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
 
 	var instance serviceInstance
-  b.db.First(&instance, "instance_id = ?", instanceID)
+	b.db.First(&instance, "instance_id = ?", instanceID)
 
 	awsStatus, err := b.mgr.GetAccountStatus(instance.RequestId)
 	brokerState := awsStatusToBrokerInstanceState(*awsStatus)
