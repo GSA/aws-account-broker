@@ -68,9 +68,9 @@ func (am accountManager) CreateAccount(acctName string, email string) (*organiza
 	return result, err
 }
 
-func (am accountManager) GetAccountStatus(caRequestId string) (*organizations.CreateAccountStatus, error) {
+func (am accountManager) GetAccountStatus(caRequestID string) (*organizations.CreateAccountStatus, error) {
 	input := &organizations.DescribeCreateAccountStatusInput{}
-	input.SetCreateAccountRequestId(caRequestId)
+	input.SetCreateAccountRequestId(caRequestID)
 
 	err := input.Validate()
 	if err != nil {

@@ -73,8 +73,8 @@ func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 
 type serviceInstance struct {
 	gorm.Model
-	InstanceId string
-	RequestId  string
+	InstanceID string
+	RequestID  string
 }
 
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
@@ -91,9 +91,9 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 
 	b.logger.Info("Account created for " + email)
 	var requestID = *createResult.CreateAccountStatus.Id
-	b.logger.Info("RequestId: " + requestID)
+	b.logger.Info("RequestID: " + requestID)
 
-	b.db.Create(&serviceInstance{InstanceId: instanceID, RequestId: requestID})
+	b.db.Create(&serviceInstance{InstanceID: instanceID, RequestID: requestID})
 
 	spec.IsAsync = true
 	// TODO set OperationData?
@@ -124,7 +124,7 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 	var instance serviceInstance
 	b.db.First(&instance, "instance_id = ?", instanceID)
 
-	awsStatus, err := b.mgr.GetAccountStatus(instance.RequestId)
+	awsStatus, err := b.mgr.GetAccountStatus(instance.RequestID)
 	brokerState := awsStatusToBrokerInstanceState(*awsStatus)
 
 	op := brokerapi.LastOperation{

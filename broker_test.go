@@ -16,7 +16,7 @@ import (
 
 type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
-	Id          string
+	id          string
 	createErr   error
 	createState string
 }
@@ -24,7 +24,7 @@ type mockOrganizationsClient struct {
 func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccountInput) (*organizations.CreateAccountOutput, error) {
 	output := organizations.CreateAccountOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
-			Id:          &m.Id,
+			Id:          &m.id,
 			AccountName: input.AccountName,
 			State:       &m.createState,
 		},
