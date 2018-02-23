@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"code.cloudfoundry.org/lager"
@@ -16,20 +18,35 @@ import (
 
 type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
-	id          string
 	createErr   error
 	createState string
 }
 
 func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccountInput) (*organizations.CreateAccountOutput, error) {
+	var id = "car-999999999999"
 	output := organizations.CreateAccountOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
-			Id:          &m.id,
+			Id:          &id,
 			AccountName: input.AccountName,
 			State:       &m.createState,
 		},
 	}
 
+	return &output, m.createErr
+}
+
+func (m mockOrganizationsClient) GetAccountStatus(input *organizations.DescribeCreateAccountStatusInput) (*organizations.DescribeCreateAccountStatusOutput, error) {
+	var accountID = "999999999999"
+	var instanceID = "123"
+
+	output := organizations.DescribeCreateAccountStatusOutput{
+		CreateAccountStatus: &organizations.CreateAccountStatus{
+			AccountId:   &accountID,
+			AccountName: &instanceID,
+			Id:          input.CreateAccountRequestId,
+			State:       &m.createState,
+		},
+	}
 	return &output, m.createErr
 }
 
@@ -43,10 +60,16 @@ func mockBroker(createErr error, createState string) awsAccountBroker {
 	baseEmail := "foo@bar.com"
 	logger := lager.NewLogger("test")
 
-	db, err := gorm.Open("sqlite3", "broker_test.db")
+	//Make sure there is no existing DB
+	var dbFileName = filepath.Join(os.TempDir(), "broker_test.db")
+	//os.Remove(dbFileName)
+	db, err := gorm.Open("sqlite3", dbFileName)
 	if err != nil {
 		logger.Fatal("startup", errors.New("failed to connect database"))
 	}
+
+	//Setup Database structure
+	db.AutoMigrate(&serviceInstance{})
 
 	return awsAccountBroker{mgr, baseEmail, logger, db}
 }
@@ -113,4 +136,13 @@ func TestProvisionSync(t *testing.T) {
 	_, err := broker.Provision(ctx, "123", details, false)
 
 	assert.Error(t, err)
+}
+
+func TestLastOperation(t *testing.T) {
+	broker := mockBroker(nil, organizations.CreateAccountStateSucceeded)
+	ctx := context.Background()
+
+	result, _ := broker.LastOperation(ctx, "123", "")
+
+	assert.Equal(t, result.State, "SUCCEEDED")
 }
