@@ -23,7 +23,7 @@ type mockOrganizationsClient struct {
 }
 
 func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccountInput) (*organizations.CreateAccountOutput, error) {
-	var id = "car-999999999999"
+	id := "car-999999999999"
 	output := organizations.CreateAccountOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
 			Id:          &id,
@@ -36,8 +36,8 @@ func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccoun
 }
 
 func (m mockOrganizationsClient) DescribeCreateAccountStatus(input *organizations.DescribeCreateAccountStatusInput) (*organizations.DescribeCreateAccountStatusOutput, error) {
-	var accountID = "999999999999"
-	var instanceID = "test-account"
+	accountID := "999999999999"
+	instanceID := "test-account"
 
 	output := organizations.DescribeCreateAccountStatusOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
@@ -60,9 +60,7 @@ func mockBroker(createErr error, createState string) awsAccountBroker {
 	baseEmail := "foo@bar.com"
 	logger := lager.NewLogger("test")
 
-	//Make sure there is no existing DB
-	var dbFileName = filepath.Join(os.TempDir(), "broker_test.db")
-	//os.Remove(dbFileName)
+	dbFileName := filepath.Join(os.TempDir(), "broker_test.db")
 	db, err := gorm.Open("sqlite3", dbFileName)
 	if err != nil {
 		logger.Fatal("startup", errors.New("failed to connect database"))

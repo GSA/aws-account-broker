@@ -10,7 +10,7 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
     1. [Go](https://golang.org/)
     1. [Dep](https://golang.github.io/dep/docs/installation.html)
     1. [SQLite](https://www.sqlite.orga) - Proof of concept testing is using SQLite3 for persistence
-        -
+
 1. Clone the repository.
 
     ```sh
