@@ -140,7 +140,8 @@ func TestLastOperation(t *testing.T) {
 	broker := mockBroker(nil, organizations.CreateAccountStateSucceeded)
 	ctx := context.Background()
 
-	result, _ := broker.LastOperation(ctx, "test-account", "")
+	result, err := broker.LastOperation(ctx, "test-account", "")
 
+	assert.NoError(t, err)
 	assert.Equal(t, brokerapi.Succeeded, result.State)
 }
