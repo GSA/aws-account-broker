@@ -68,17 +68,16 @@ func (am accountManager) CreateAccount(acctName string, email string) (*organiza
 	return result, err
 }
 
-// TODO accept an ID - currently just gets the first one
-func (am accountManager) GetAccountStatus() (*organizations.CreateAccountStatus, error) {
-	input := &organizations.ListCreateAccountStatusInput{}
-	input.SetMaxResults(1)
+func (am accountManager) GetAccountStatus(caRequestID string) (*organizations.CreateAccountStatus, error) {
+	input := &organizations.DescribeCreateAccountStatusInput{}
+	input.SetCreateAccountRequestId(caRequestID)
 
 	err := input.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := am.svc.ListCreateAccountStatus(input)
+	result, err := am.svc.DescribeCreateAccountStatus(input)
 	if err != nil {
 		printErr(err)
 		return nil, err
@@ -86,7 +85,7 @@ func (am accountManager) GetAccountStatus() (*organizations.CreateAccountStatus,
 
 	fmt.Println(result)
 
-	return result.CreateAccountStatuses[0], nil
+	return result.CreateAccountStatus, nil
 }
 
 func newAccountManager() (accountManager, error) {

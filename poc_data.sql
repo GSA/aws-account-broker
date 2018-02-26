@@ -1,0 +1,10 @@
+PRAGMA foreign_keys=OFF;
+BEGIN TRANSACTION;
+CREATE TABLE "service_instances" ("id" integer primary key autoincrement,"created_at" datetime,"updated_at" datetime,"deleted_at" datetime,"instance_id" varchar(255),"request_id" varchar(255) );
+INSERT INTO "service_instances" VALUES(1,'2018-02-21 17:47:15.142341661-05:00','2018-02-21 17:47:15.142341661-05:00',NULL,'scp-test','car-2071c37006f911e89f98500c04b7b2c5');
+INSERT INTO "service_instances" VALUES(2,'2018-02-21 17:47:15.148349831-05:00','2018-02-21 17:47:15.148349831-05:00',NULL,'broker-account','car-9f57a600103611e88d8f50843ec7f68d');
+INSERT INTO "service_instances" VALUES(3,'2018-02-21 19:38:52.56705523-05:00','2018-02-21 19:38:52.56705523-05:00',NULL,'gsa-devsecops-fitz','car-c132a700176811e894fa50d5ca136cf1');
+DELETE FROM sqlite_sequence;
+INSERT INTO "sqlite_sequence" VALUES('service_instances',3);
+CREATE INDEX idx_service_instances_deleted_at ON "service_instances"(deleted_at) ;
+COMMIT;

@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/aws/aws-sdk-go/service/organizations/organizationsiface"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,13 +23,30 @@ type mockOrganizationsClient struct {
 }
 
 func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccountInput) (*organizations.CreateAccountOutput, error) {
+	id := "car-999999999999"
 	output := organizations.CreateAccountOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
+			Id:          &id,
 			AccountName: input.AccountName,
 			State:       &m.createState,
 		},
 	}
 
+	return &output, m.createErr
+}
+
+func (m mockOrganizationsClient) DescribeCreateAccountStatus(input *organizations.DescribeCreateAccountStatusInput) (*organizations.DescribeCreateAccountStatusOutput, error) {
+	accountID := "999999999999"
+	instanceID := "test-account"
+
+	output := organizations.DescribeCreateAccountStatusOutput{
+		CreateAccountStatus: &organizations.CreateAccountStatus{
+			AccountId:   &accountID,
+			AccountName: &instanceID,
+			Id:          input.CreateAccountRequestId,
+			State:       &m.createState,
+		},
+	}
 	return &output, m.createErr
 }
 
@@ -39,7 +60,16 @@ func mockBroker(createErr error, createState string) awsAccountBroker {
 	baseEmail := "foo@bar.com"
 	logger := lager.NewLogger("test")
 
-	return awsAccountBroker{mgr, baseEmail, logger}
+	dbFileName := filepath.Join(os.TempDir(), "broker_test.db")
+	db, err := gorm.Open("sqlite3", dbFileName)
+	if err != nil {
+		logger.Fatal("startup", errors.New("failed to connect database"))
+	}
+
+	//Setup Database structure
+	db.AutoMigrate(&serviceInstance{})
+
+	return awsAccountBroker{mgr, baseEmail, logger, db}
 }
 
 func TestAWSStatusToBrokerInstanceState(t *testing.T) {
@@ -79,7 +109,7 @@ func TestProvisionSuccess(t *testing.T) {
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
-	spec, err := broker.Provision(ctx, "123", details, true)
+	spec, err := broker.Provision(ctx, "test-account", details, true)
 
 	assert.NoError(t, err)
 	assert.True(t, spec.IsAsync)
@@ -90,7 +120,7 @@ func TestProvisionFail(t *testing.T) {
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
-	_, err := broker.Provision(ctx, "123", details, true)
+	_, err := broker.Provision(ctx, "test-account", details, true)
 
 	assert.Error(t, err)
 }
@@ -101,7 +131,17 @@ func TestProvisionSync(t *testing.T) {
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
-	_, err := broker.Provision(ctx, "123", details, false)
+	_, err := broker.Provision(ctx, "test-account", details, false)
 
 	assert.Error(t, err)
+}
+
+func TestLastOperation(t *testing.T) {
+	broker := mockBroker(nil, organizations.CreateAccountStateSucceeded)
+	ctx := context.Background()
+
+	result, err := broker.LastOperation(ctx, "test-account", "")
+
+	assert.NoError(t, err)
+	assert.Equal(t, brokerapi.Succeeded, result.State)
 }
