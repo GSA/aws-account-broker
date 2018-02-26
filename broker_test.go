@@ -35,9 +35,9 @@ func (m mockOrganizationsClient) CreateAccount(input *organizations.CreateAccoun
 	return &output, m.createErr
 }
 
-func (m mockOrganizationsClient) GetAccountStatus(input *organizations.DescribeCreateAccountStatusInput) (*organizations.DescribeCreateAccountStatusOutput, error) {
+func (m mockOrganizationsClient) DescribeCreateAccountStatus(input *organizations.DescribeCreateAccountStatusInput) (*organizations.DescribeCreateAccountStatusOutput, error) {
 	var accountID = "999999999999"
-	var instanceID = "123"
+	var instanceID = "test-account"
 
 	output := organizations.DescribeCreateAccountStatusOutput{
 		CreateAccountStatus: &organizations.CreateAccountStatus{
@@ -111,7 +111,7 @@ func TestProvisionSuccess(t *testing.T) {
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
-	spec, err := broker.Provision(ctx, "123", details, true)
+	spec, err := broker.Provision(ctx, "test-account", details, true)
 
 	assert.NoError(t, err)
 	assert.True(t, spec.IsAsync)
@@ -122,7 +122,7 @@ func TestProvisionFail(t *testing.T) {
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
-	_, err := broker.Provision(ctx, "123", details, true)
+	_, err := broker.Provision(ctx, "test-account", details, true)
 
 	assert.Error(t, err)
 }
@@ -133,7 +133,7 @@ func TestProvisionSync(t *testing.T) {
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
-	_, err := broker.Provision(ctx, "123", details, false)
+	_, err := broker.Provision(ctx, "test-account", details, false)
 
 	assert.Error(t, err)
 }
@@ -142,7 +142,7 @@ func TestLastOperation(t *testing.T) {
 	broker := mockBroker(nil, organizations.CreateAccountStateSucceeded)
 	ctx := context.Background()
 
-	result, _ := broker.LastOperation(ctx, "123", "")
+	result, _ := broker.LastOperation(ctx, "test-account", "")
 
-	assert.Equal(t, result.State, "SUCCEEDED")
+	assert.Equal(t, brokerapi.Succeeded, result.State)
 }
