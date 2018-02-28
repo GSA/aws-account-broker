@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/aws/aws-sdk-go/service/organizations"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pivotal-cf/brokerapi"
 )
 
@@ -21,6 +24,7 @@ type awsAccountBroker struct {
 	mgr       accountManager
 	baseEmail string
 	logger    lager.Logger
+	db        *gorm.DB
 }
 
 func awsStatusToBrokerInstanceState(status organizations.CreateAccountStatus) brokerapi.LastOperationState {
@@ -68,6 +72,12 @@ func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 	}
 }
 
+type serviceInstance struct {
+	gorm.Model
+	InstanceID string
+	RequestID  string
+}
+
 func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, details brokerapi.ProvisionDetails, asyncAllowed bool) (brokerapi.ProvisionedServiceSpec, error) {
 	spec := brokerapi.ProvisionedServiceSpec{}
 	if !asyncAllowed {
@@ -75,16 +85,16 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	}
 
 	email := generateUniqueEmail(b.baseEmail, instanceID)
-	_, err := b.mgr.CreateAccount("Service Broker account", email)
+	createResult, err := b.mgr.CreateAccount(instanceID, email, b.db)
 	if err != nil {
 		return spec, err
 	}
-	// TODO use the result?
 
 	b.logger.Info("Account created for " + email)
 
 	spec.IsAsync = true
-	// TODO set OperationData?
+	status, _ := json.Marshal(createResult.CreateAccountStatus)
+	spec.OperationData = string(status)
 	return spec, nil
 }
 
@@ -108,7 +118,11 @@ func (b awsAccountBroker) Update(ctx context.Context, instanceID string, details
 }
 
 func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operationData string) (brokerapi.LastOperation, error) {
-	awsStatus, err := b.mgr.GetAccountStatus()
+
+	var instance serviceInstance
+	b.db.First(&instance, "instance_id = ?", instanceID)
+
+	awsStatus, err := b.mgr.GetAccountStatus(instance.RequestID)
 	brokerState := awsStatusToBrokerInstanceState(*awsStatus)
 
 	op := brokerapi.LastOperation{
@@ -118,7 +132,7 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 	return op, err
 }
 
-func NewAWSAccountBroker(baseEmail string, logger lager.Logger) (awsAccountBroker, error) {
+func NewAWSAccountBroker(baseEmail string, logger lager.Logger, db *gorm.DB) (awsAccountBroker, error) {
 	mgr, err := newAccountManager()
-	return awsAccountBroker{mgr, baseEmail, logger}, err
+	return awsAccountBroker{mgr, baseEmail, logger, db}, err
 }

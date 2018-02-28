@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/aws/aws-sdk-go/service/organizations/organizationsiface"
+	"github.com/jinzhu/gorm"
 )
 
 func printErr(err error) {
@@ -43,7 +44,7 @@ type accountManager struct {
 	svc organizationsiface.OrganizationsAPI
 }
 
-func (am accountManager) CreateAccount(acctName string, email string) (*organizations.CreateAccountOutput, error) {
+func (am accountManager) CreateAccount(acctName string, email string, db *gorm.DB) (*organizations.CreateAccountOutput, error) {
 	// follows this example
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
 
@@ -64,21 +65,22 @@ func (am accountManager) CreateAccount(acctName string, email string) (*organiza
 	}
 
 	fmt.Println(result)
+	requestID := result.CreateAccountStatus.Id
+	db.Create(&serviceInstance{InstanceID: acctName, RequestID: *requestID})
 
 	return result, err
 }
 
-// TODO accept an ID - currently just gets the first one
-func (am accountManager) GetAccountStatus() (*organizations.CreateAccountStatus, error) {
-	input := &organizations.ListCreateAccountStatusInput{}
-	input.SetMaxResults(1)
+func (am accountManager) GetAccountStatus(caRequestID string) (*organizations.CreateAccountStatus, error) {
+	input := &organizations.DescribeCreateAccountStatusInput{}
+	input.SetCreateAccountRequestId(caRequestID)
 
 	err := input.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := am.svc.ListCreateAccountStatus(input)
+	result, err := am.svc.DescribeCreateAccountStatus(input)
 	if err != nil {
 		printErr(err)
 		return nil, err
@@ -86,7 +88,7 @@ func (am accountManager) GetAccountStatus() (*organizations.CreateAccountStatus,
 
 	fmt.Println(result)
 
-	return result.CreateAccountStatuses[0], nil
+	return result.CreateAccountStatus, nil
 }
 
 func newAccountManager() (accountManager, error) {

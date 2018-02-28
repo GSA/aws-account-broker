@@ -8,7 +8,9 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 
 1. Install system dependencies.
     1. [Go](https://golang.org/)
-    1. [Dep](https://golang.github.io/dep/docs/installation.html) (`go get -u github.com/golang/dep/cmd/dep`)
+    1. [Dep](https://golang.github.io/dep/docs/installation.html)
+    1. [SQLite](https://www.sqlite.orga) - Proof of concept testing is using SQLite3 for persistence
+
 1. Clone the repository.
 
     ```sh
@@ -30,6 +32,17 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
     ```sh
     go build
     ```
+1. Setup the database with Proof-of-Concept data.
+
+    ```sh
+    sqlite3 aws-account-broker.db < poc_data.sql  
+    ```
+
+1. Alternatively, you can inialize the database with just the schema with no data.
+
+    ```sh
+    sqlite3 aws-account-broker.db < schema.sql
+    ```
 
 1. Pick a base email.
     * Email addresses for AWS accounts need to be unique, so `BASE_EMAIL` (below) will be turned into `something+<ID>@some.com`. This works in GMail, at the very least - you may need to confirm with your mail provider.
@@ -45,7 +58,20 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
     curl --user user:pass http://localhost:8080/v2/catalog
     ```
 
-Make sure to use the user and pass that you specified in the run command above.
+    Make sure to use the user and pass that you specified in the run command above.
+
+1. To create an account (also known as [Provisioning](https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md#provisioning)):
+
+    ```sh
+    curl "http://user:pass@localhost:8080/v2/service_instances/<INSTANCE_ID>?accepts_incomplete=true" -d '{
+      "service_id": "aws-account-broker",
+      "plan_id": "IGNORED",
+      "organization_guid": "IGNORED",
+      "space_guid": "IGNORED"
+    }' -X PUT -H "X-Broker-API-Version: 2.13" -H "Content-Type: application/json"
+    ```
+
+    Note that the `INSTANCE_ID` needs to be unique value for all the accounts in your Organization, as it's used to produce the unique email. The command also contains some dummy parameters - marked as `IGNORED` - which are required by the API spec but not yet used.
 
 ### Development
 
