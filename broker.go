@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -84,19 +85,16 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 	}
 
 	email := generateUniqueEmail(b.baseEmail, instanceID)
-	createResult, err := b.mgr.CreateAccount(instanceID, email)
+	createResult, err := b.mgr.CreateAccount(instanceID, email, b.db)
 	if err != nil {
 		return spec, err
 	}
 
 	b.logger.Info("Account created for " + email)
-	var requestID = *createResult.CreateAccountStatus.Id
-	b.logger.Info("RequestID: " + requestID)
-
-	b.db.Create(&serviceInstance{InstanceID: instanceID, RequestID: requestID})
 
 	spec.IsAsync = true
-	// TODO set OperationData?
+	status, _ := json.Marshal(createResult.CreateAccountStatus)
+	spec.OperationData = string(status)
 	return spec, nil
 }
 

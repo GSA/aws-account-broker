@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/organizations"
 	"github.com/aws/aws-sdk-go/service/organizations/organizationsiface"
+	"github.com/jinzhu/gorm"
 )
 
 func printErr(err error) {
@@ -43,7 +44,7 @@ type accountManager struct {
 	svc organizationsiface.OrganizationsAPI
 }
 
-func (am accountManager) CreateAccount(acctName string, email string) (*organizations.CreateAccountOutput, error) {
+func (am accountManager) CreateAccount(acctName string, email string, db *gorm.DB) (*organizations.CreateAccountOutput, error) {
 	// follows this example
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/organizations/#example_Organizations_CreateAccount_shared00
 
@@ -64,6 +65,8 @@ func (am accountManager) CreateAccount(acctName string, email string) (*organiza
 	}
 
 	fmt.Println(result)
+	requestID := result.CreateAccountStatus.Id
+	db.Create(&serviceInstance{InstanceID: acctName, RequestID: *requestID})
 
 	return result, err
 }
