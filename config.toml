@@ -1,0 +1,17 @@
+[server]
+host = "localhost"
+port = "8080"
+
+[database]
+# DATABASE_URL environment variable takes precendence
+# SQLite3
+provider = "sqlite3"
+args = "/tmp/aws-account-broker.db"
+#
+# PostgreSQL
+# provider = "postgres"
+# args = "host=myhost port=myport user=gorm dbname=gorm password=mypassword"
+#
+# MySQL
+# provider = "mysql"
+# args = "user:password@/dbname?charset=utf8&parseTime=True&loc=Local

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"code.cloudfoundry.org/lager"
+	"github.com/BurntSushi/toml"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/pivotal-cf/brokerapi"
@@ -14,6 +15,21 @@ import (
 
 var strUser = flag.String("user", "", "User name")
 var strPass = flag.String("pass", "", "Password")
+
+type tomlConfig struct {
+	Server server   `toml:"server"`
+	DB     database `toml:"database"`
+}
+
+type database struct {
+	Provider string
+	Args     string
+}
+
+type server struct {
+	Host string
+	Port string
+}
 
 func init() {
 	flag.Parse()
@@ -28,14 +44,20 @@ func main() {
 	logger.RegisterSink(lager.NewWriterSink(os.Stderr, lager.ERROR))
 	logger.Info("Starting AWS account broker")
 
+	var config tomlConfig
+	if _, err := toml.DecodeFile("config.toml", &config); err != nil {
+		logger.Fatal("Problem reading config", err)
+		return
+	}
+
 	baseEmail, found := os.LookupEnv("BASE_EMAIL")
 	if !found {
 		logger.Fatal("startup", errors.New("BASE_EMAIL not set"))
 	}
 
-	db, err := gorm.Open("sqlite3", "aws-account-broker.db")
+	db, err := gorm.Open(config.DB.Provider, config.DB.Args)
 	if err != nil {
-		logger.Fatal("startup", errors.New("failed to connect database"))
+		logger.Fatal("Failed to connect database", err)
 	}
 	defer db.Close()
 
@@ -52,8 +74,8 @@ func main() {
 	brokerAPI := brokerapi.New(broker, logger, creds)
 	http.Handle("/", brokerAPI)
 
-	host := "127.0.0.1"
-	port := "8080"
+	host := config.Server.Host
+	port := config.Server.Port
 	origin := host + ":" + port
 	logger.Info("Broker listening at " + origin)
 	logger.Fatal("http-listen", http.ListenAndServe(origin, nil))
