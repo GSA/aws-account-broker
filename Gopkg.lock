@@ -2,9 +2,16 @@
 
 
 [[projects]]
+  branch = "master"
   name = "code.cloudfoundry.org/lager"
   packages = ["."]
-  revision = "0bfa98e49e7a976af91e918d47978f07c00b081f"
+  revision = "a77e1033ba8d8e36597be5c0d384ee6054105bc2"
+
+[[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
@@ -38,8 +45,8 @@
     "service/organizations/organizationsiface",
     "service/sts"
   ]
-  revision = "adeb60566bc8c9202b0f1be7e3a675beedbc11f0"
-  version = "v1.13.2"
+  revision = "aace5875a5c3b85a3902c6d72b9caed301d64cce"
+  version = "v1.13.8"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -71,8 +78,8 @@
     ".",
     "dialects/sqlite"
   ]
-  revision = "5174cc5c242a728b435ea2be8a2f7f998e15429b"
-  version = "v1.0"
+  revision = "6ed508ec6a4ecb3531899a69cbc746ccf65a4166"
+  version = "v1.9.1"
 
 [[projects]]
   branch = "master"
@@ -98,7 +105,7 @@
     ".",
     "auth"
   ]
-  revision = "b3e8b6720ab2c7f3383dc74251b20bf345736137"
+  revision = "739cb777b9519b47782dcd6c43c9c2839ba15a76"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -115,6 +122,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4fd9d61a43ff08c6d58c92d915fcd81b05a3525e514a6b03ed4b4fc08219326b"
+  inputs-digest = "1bb5443e9d87d6aebcb7980aff5eff053ec32b1c0426be79520b62425c104247"
   solver-name = "gps-cdcl"
   solver-version = 1
