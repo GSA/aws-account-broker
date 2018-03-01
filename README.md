@@ -35,13 +35,13 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 1. Setup the database with Proof-of-Concept data.
 
     ```sh
-    sqlite3 aws-account-broker.db < poc_data.sql  
+    sqlite3 /tmp/aws-account-broker.db < poc_data.sql  
     ```
 
 1. Alternatively, you can inialize the database with just the schema with no data.
 
     ```sh
-    sqlite3 aws-account-broker.db < schema.sql
+    sqlite3 /tmp/aws-account-broker.db < schema.sql
     ```
 
 1. Pick a base email.
