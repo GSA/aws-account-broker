@@ -4,6 +4,9 @@ CREATE TABLE "service_instances" ("id" integer primary key autoincrement,"create
 INSERT INTO "service_instances" VALUES(1,'2018-02-21 17:47:15.142341661-05:00','2018-02-21 17:47:15.142341661-05:00',NULL,'scp-test','car-2071c37006f911e89f98500c04b7b2c5');
 INSERT INTO "service_instances" VALUES(2,'2018-02-21 17:47:15.148349831-05:00','2018-02-21 17:47:15.148349831-05:00',NULL,'broker-account','car-9f57a600103611e88d8f50843ec7f68d');
 INSERT INTO "service_instances" VALUES(3,'2018-02-21 19:38:52.56705523-05:00','2018-02-21 19:38:52.56705523-05:00',NULL,'gsa-devsecops-fitz','car-c132a700176811e894fa50d5ca136cf1');
+INSERT INTO "service_instances" VALUES(4,'2018-02-26 16:45:04.123456789-05:00','2018-02-26 16:45:33.123456789-05:00',NULL,'gsa-devsecops-test2','car-59c0f3e01b3e11e88d8f50843ec7f68d');
+INSERT INTO "service_instances" VALUES(5,'2018-02-26 16:45:35.123456789-05:00','2018-02-26 16:45:40.123456789-05:00',NULL,'gsa-devsecops-test3','car-603ec9901b3e11e8ae4b500c66cd64c5');
+INSERT INTO "service_instances" VALUES(6,'2018-02-26 16:45:46.123456789-05:00','2018-02-26 16:45:51.123456789-05:00',NULL,'gsa-devsecops-test4','car-66cd1a001b3e11e8b78850d50297c2c5');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('service_instances',3);
 CREATE INDEX idx_service_instances_deleted_at ON "service_instances"(deleted_at) ;
