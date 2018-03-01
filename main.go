@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"net/http"
+	"net/url"
 	"os"
 
 	"code.cloudfoundry.org/lager"
@@ -55,6 +56,15 @@ func main() {
 		logger.Fatal("startup", errors.New("BASE_EMAIL not set"))
 	}
 
+	databaseURL, found := os.LookupEnv("DATABASE_URL")
+	if found {
+		u, err := url.Parse(databaseURL)
+		if err != nil {
+			logger.Fatal("Failed to parse DATABASE_URL", err)
+		}
+		config.DB.Provider = u.Scheme
+		config.DB.Args = u.Path
+	}
 	db, err := gorm.Open(config.DB.Provider, config.DB.Args)
 	if err != nil {
 		logger.Fatal("Failed to connect database", err)

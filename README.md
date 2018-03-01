@@ -32,6 +32,7 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
     ```sh
     go build
     ```
+
 1. Setup the database with Proof-of-Concept data.
 
     ```sh
@@ -44,6 +45,16 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
     sqlite3 /tmp/aws-account-broker.db < schema.sql
     ```
 
+1. Change any settings in the `config.toml` file.  See comments in file for
+instructions.
+
+2. You can override the database settings using a `DATABASE_URL` environment variable.
+(Note: Only tested with sqlite3).
+
+    ```sh
+    export DATABASE_URL="sqlite3:/tmp/alt_database.db"
+    ```
+    
 1. Pick a base email.
     * Email addresses for AWS accounts need to be unique, so `BASE_EMAIL` (below) will be turned into `something+<ID>@some.com`. This works in GMail, at the very least - you may need to confirm with your mail provider.
 1. Run the broker.
