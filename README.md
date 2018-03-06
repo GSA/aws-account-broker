@@ -1,4 +1,5 @@
-# AWS Account Service Broker
+# AWS Account Service Broker [![CircleCI](https://circleci.com/gh/GSA/aws-account-broker.svg?style=shield)](https://circleci.com/gh/GSA/aws-account-broker)
+
 
 This is an API that [creates AWS (sub)accounts in an Organization](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create.html). The broker conforms to the [Open Service Broker API](https://www.openservicebrokerapi.org/), so is compatible with [Cloud Foundry](https://cloudfoundry.org/), [OpenShift](https://www.openshift.org/), and [Kubernetes](http://kubernetes.io/).
 
@@ -54,7 +55,7 @@ instructions.
     ```sh
     export DATABASE_URL="sqlite3:/tmp/alt_database.db"
     ```
-    
+
 1. Pick a base email.
     * Email addresses for AWS accounts need to be unique, so `BASE_EMAIL` (below) will be turned into `something+<ID>@some.com`. This works in GMail, at the very least - you may need to confirm with your mail provider.
 1. Run the broker.
