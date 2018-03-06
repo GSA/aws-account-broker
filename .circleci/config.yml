@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      # CircleCI Go images available at: https://hub.docker.com/r/circleci/golang/
+      - image: circleci/golang:latest
+
+    working_directory: /go/src/github.com/GSA/aws-account-broker
+
+    steps:
+      - checkout
+
+      - run:
+          name: Run go test
+          command: go test
+
+      - run:
+          name: Build
+          command: go build
