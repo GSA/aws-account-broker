@@ -11,6 +11,14 @@ jobs:
       - checkout
 
       - run:
+          name: Install dep from source
+          command: go get -u github.com/golang/dep/cmd/dep
+
+      - run:
+          name: Install dependencies
+          command: dep ensure
+
+      - run:
           name: Run go test
           command: go test
 
