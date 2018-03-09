@@ -132,7 +132,7 @@ func (b awsAccountBroker) LastOperation(ctx context.Context, instanceID, operati
 	return op, err
 }
 
-func NewAWSAccountBroker(baseEmail string, logger lager.Logger, db *gorm.DB) (awsAccountBroker, error) {
+func newAWSAccountBroker(baseEmail string, logger lager.Logger, db *gorm.DB) (awsAccountBroker, error) {
 	mgr, err := newAccountManager()
 	return awsAccountBroker{mgr, baseEmail, logger, db}, err
 }
