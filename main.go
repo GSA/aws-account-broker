@@ -71,7 +71,7 @@ func main() {
 	}
 	defer db.Close()
 
-	broker, err := NewAWSAccountBroker(baseEmail, logger, db)
+	broker, err := newAWSAccountBroker(baseEmail, logger, db)
 	if err != nil {
 		logger.Fatal("Problem starting broker", err)
 	}
