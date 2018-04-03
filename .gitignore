@@ -1,2 +1,4 @@
 aws-account-broker
 vendor/
+*.db
+manifest.yml

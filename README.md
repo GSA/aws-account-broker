@@ -37,13 +37,13 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 1. Setup the database with Proof-of-Concept data.
 
     ```sh
-    sqlite3 /tmp/aws-account-broker.db < poc_data.sql  
+    sqlite3 aws-account-broker.db < poc_data.sql  
     ```
 
 1. Alternatively, you can inialize the database with just the schema with no data.
 
     ```sh
-    sqlite3 /tmp/aws-account-broker.db < schema.sql
+    sqlite3 aws-account-broker.db < schema.sql
     ```
 
 1. Change any settings in the `config.toml` file.  See comments in file for
@@ -67,7 +67,7 @@ instructions.
 1. Confirm it's running and responding to requests. From another terminal, run:
 
     ```sh
-    curl --user user:pass http://localhost:8080/v2/catalog
+    curl --user user:pass -H "X-Broker-API-Version: 2.13" http://localhost:8080/v2/catalog
     ```
 
     Make sure to use the user and pass that you specified in the run command above.
@@ -96,3 +96,67 @@ instructions.
   ```
 
 3. CONTROL+C, then go back to 1
+
+### Deploy to Cloud.gov
+
+1. Initialize the database; For proof-of-concept testing, initialize with the
+`poc_data.sql` file, otherwise use the `schema.sql` file.
+
+    ```sh
+    sqlite3 aws-account-broker.db < poc_data.sql
+    ```
+
+1. Copy the `manifest.sample` file to `manaifest.yml` and edit the environment
+variables.
+1. Log in to Cloud.gov.
+
+    ```sh
+    cf login -a api.fr.cloud.gov --sso
+    ```
+
+1. For now, target your sandbox
+
+    ```sh
+    cf cf target -o <ORG> -s <SPACE>
+    ```
+
+1. Push the app.
+
+    ```sh
+    cf push --random-route aws-account-broker
+    ```
+
+1. In the Cloud.gov dashboard, navigate to the app and set the following
+environment variables:
+
+    - `BASE_EMAIL`
+    - `BROKER_USER`
+    - `BROKER_PASSWORD`
+
+1. Restart the application
+1. Get the random route
+
+    ```sh
+    broker_url=$(cf app aws-account-broker | grep routes: | awk '{print $2}')
+    ```
+
+1. Check the service catalog
+
+    ```sh
+    curl -u ${BROKER_USER}:${BROKER_PASSWORD} -H "X-Broker-API-Version: 2.13" https://${broker_url
+}/v2/catalog
+    ```
+
+1. Check last operation
+
+    ```sh
+    curl -u ${BROKER_USER}:${BROKER_PASSWORD} -H "X-Broker-API-Version: 2.13" https://${broker_url}/v2/service_instances/gsa-devsecops-test4/last_operation
+    ```
+
+1. Register the broker
+
+    ```sh
+    cf create-service-broker aws-account-broker  \
+    ${BROKER_USER} ${BROKER_PASSWORD} https://${broker_url} \
+    --space-scoped
+    ```

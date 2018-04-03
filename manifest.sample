@@ -1,0 +1,8 @@
+---
+  env:
+    GOPACKAGENAME: aws-account-broker
+    BASE_EMAIL: your.name@gsa.gov
+    BROKER_USER: randomstring
+    BROKER_PASSWORD: longerrandomstring
+    AWS_ACCESS_KEY_ID: yourAccessKey
+    AWS_SECRET_ACCESS_KEY: yourSecretKey

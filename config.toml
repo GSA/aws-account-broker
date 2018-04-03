@@ -1,12 +1,8 @@
-[server]
-host = "localhost"
-port = "8080"
-
 [database]
 # DATABASE_URL environment variable takes precendence
 # SQLite3
 provider = "sqlite3"
-args = "/tmp/aws-account-broker.db"
+args = "aws-account-broker.db"
 #
 # PostgreSQL
 # provider = "postgres"
