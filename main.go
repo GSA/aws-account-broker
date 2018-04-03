@@ -14,22 +14,16 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 )
 
-var strUser = flag.String("user", "", "User name")
-var strPass = flag.String("pass", "", "Password")
+var strUser = flag.String("user", os.Getenv("BROKER_USER"), "User name")
+var strPass = flag.String("pass", os.Getenv("BROKER_PASSWORD"), "Password")
 
 type tomlConfig struct {
-	Server server   `toml:"server"`
-	DB     database `toml:"database"`
+	DB database `toml:"database"`
 }
 
 type database struct {
 	Provider string
 	Args     string
-}
-
-type server struct {
-	Host string
-	Port string
 }
 
 func init() {
@@ -84,9 +78,8 @@ func main() {
 	brokerAPI := brokerapi.New(broker, logger, creds)
 	http.Handle("/", brokerAPI)
 
-	host := config.Server.Host
-	port := config.Server.Port
-	origin := host + ":" + port
+	port := os.Getenv("PORT")
+	origin := ":" + port
 	logger.Info("Broker listening at " + origin)
 	logger.Fatal("http-listen", http.ListenAndServe(origin, nil))
 }

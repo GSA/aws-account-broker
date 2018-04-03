@@ -37,13 +37,13 @@ This is an API that [creates AWS (sub)accounts in an Organization](https://docs.
 1. Setup the database with Proof-of-Concept data.
 
     ```sh
-    sqlite3 /tmp/aws-account-broker.db < poc_data.sql  
+    sqlite3 aws-account-broker.db < poc_data.sql  
     ```
 
 1. Alternatively, you can inialize the database with just the schema with no data.
 
     ```sh
-    sqlite3 /tmp/aws-account-broker.db < schema.sql
+    sqlite3 aws-account-broker.db < schema.sql
     ```
 
 1. Change any settings in the `config.toml` file.  See comments in file for
@@ -67,7 +67,7 @@ instructions.
 1. Confirm it's running and responding to requests. From another terminal, run:
 
     ```sh
-    curl --user user:pass http://localhost:8080/v2/catalog
+    curl --user user:pass -H "X-Broker-API-Version: 2.13" http://localhost:8080/v2/catalog
     ```
 
     Make sure to use the user and pass that you specified in the run command above.
@@ -96,3 +96,69 @@ instructions.
   ```
 
 3. CONTROL+C, then go back to 1
+
+### Deploy to Cloud.gov
+
+1. Initialize the database; For proof-of-concept testing, initialize with the
+`poc_data.sql` file, otherwise use the `schema.sql` file.
+
+    ```sh
+    sqlite3 aws-account-broker.db < poc_data.sql
+    ```
+
+1. Log in to Cloud.gov and setup the command line.  [See documentation](https://cloud.gov/docs/getting-started/setup/#set-up-the-command-line)
+1. For now, target your sandbox
+
+    ```sh
+    cf target -o <ORG> -s <SPACE>
+    ```
+
+1. Push the app. **Note:** The app will fail because required environment
+variables are not set yet.
+
+    ```sh
+    cf push --random-route aws-account-broker
+    ```
+
+1. Set the environment variables from the command line or Cloud.gov dashboard.
+environment variables:
+
+    ```sh
+    cf set-env aws-account-broker BASE_EMAIL ${BASE_EMAIL}
+    cf set-env aws-account-broker BROKER_USER ${BROKER_USER}
+    cf set-env aws-account-broker BROKER_PASSWORD ${BROKER_PASSWORD}
+    cf set-env aws-account-broker AWS_ACCESS_KEY_ID ${AWS_ACCESS_KEY_ID}
+    cf set-env aws-account-broker AWS_SECRET_ACCESS_KEY ${AWS_SECRET_ACCESS_KEY}
+    ```
+
+1. Restage the application
+
+    ```sh
+    cf restage aws-account-broker
+    ```
+
+1. Get the random route
+
+    ```sh
+    broker_url=$(cf app aws-account-broker | grep routes: | awk '{print $2}')
+    ```
+
+1. Check the service catalog
+
+    ```sh
+    curl -u ${BROKER_USER}:${BROKER_PASSWORD} -H "X-Broker-API-Version: 2.13" https://${broker_url}/v2/catalog
+    ```
+
+1. Check last operation
+
+    ```sh
+    curl -u ${BROKER_USER}:${BROKER_PASSWORD} -H "X-Broker-API-Version: 2.13" https://${broker_url}/v2/service_instances/gsa-devsecops-test4/last_operation
+    ```
+
+1. Register the broker
+
+    ```sh
+    cf create-service-broker aws-account-broker  \
+    ${BROKER_USER} ${BROKER_PASSWORD} https://${broker_url} \
+    --space-scoped
+    ```
