@@ -106,34 +106,37 @@ instructions.
     sqlite3 aws-account-broker.db < poc_data.sql
     ```
 
-1. Copy the `manifest.sample` file to `manaifest.yml` and edit the environment
-variables.
-1. Log in to Cloud.gov.
-
-    ```sh
-    cf login -a api.fr.cloud.gov --sso
-    ```
-
+1. Log in to Cloud.gov and setup the command line.  [See documentation](https://cloud.gov/docs/getting-started/setup/#set-up-the-command-line)
 1. For now, target your sandbox
 
     ```sh
-    cf cf target -o <ORG> -s <SPACE>
+    cf target -o <ORG> -s <SPACE>
     ```
 
-1. Push the app.
+1. Push the app. **Note:** The app will fail because required environment
+variables are not set yet.
 
     ```sh
     cf push --random-route aws-account-broker
     ```
 
-1. In the Cloud.gov dashboard, navigate to the app and set the following
+1. Set the environment variables from the command line or Cloud.gov dashboard.
 environment variables:
 
-    - `BASE_EMAIL`
-    - `BROKER_USER`
-    - `BROKER_PASSWORD`
+    ```sh
+    cf set-env aws-account-broker BASE_EMAIL ${BASE_EMAIL}
+    cf set-env aws-account-broker BROKER_USER ${BROKER_USER}
+    cf set-env aws-account-broker BROKER_PASSWORD ${BROKER_PASSWORD}
+    cf set-env aws-account-broker AWS_ACCESS_KEY_ID ${AWS_ACCESS_KEY_ID}
+    cf set-env aws-account-broker AWS_SECRET_ACCESS_KEY ${AWS_SECRET_ACCESS_KEY}
+    ```
 
-1. Restart the application
+1. Restage the application
+
+    ```sh
+    cf restage aws-account-broker
+    ```
+
 1. Get the random route
 
     ```sh
@@ -143,8 +146,7 @@ environment variables:
 1. Check the service catalog
 
     ```sh
-    curl -u ${BROKER_USER}:${BROKER_PASSWORD} -H "X-Broker-API-Version: 2.13" https://${broker_url
-}/v2/catalog
+    curl -u ${BROKER_USER}:${BROKER_PASSWORD} -H "X-Broker-API-Version: 2.13" https://${broker_url}/v2/catalog
     ```
 
 1. Check last operation
