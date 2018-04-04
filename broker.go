@@ -48,14 +48,18 @@ func generateUniqueEmail(baseEmail string, id string) string {
 func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 	return []brokerapi.Service{
 		brokerapi.Service{
-			// TODO change to GUID?
-			// https://github.com/openservicebrokerapi/servicebroker/blob/v2.13/spec.md#service-objects
-			ID:          "aws-account-broker",
+			ID:          "1d138a29-ac8b-4360-be9b-db50867fee95",
 			Name:        "aws-account",
 			Description: "Provisions AWS accounts under the organization",
 			Bindable:    true,
 			// TODO add plans
-			Plans: []brokerapi.ServicePlan{},
+			Plans: []brokerapi.ServicePlan{
+				brokerapi.ServicePlan{
+					ID:          "2e8718e2-0991-48d2-b3be-514303bf762d",
+					Name:        "devsecops",
+					Description: "Provisions AWS accounts under the organization",
+				},
+			},
 			Metadata: &brokerapi.ServiceMetadata{
 				DisplayName: "AWS account broker",
 				// LongDescription:     "...",

@@ -162,3 +162,23 @@ environment variables:
     ${BROKER_USER} ${BROKER_PASSWORD} https://${broker_url} \
     --space-scoped
     ```
+
+1. Display the broker in marketplace
+
+    ```sh
+    cf marketplace -s aws-broker
+    ```
+
+1. Create an AWS account.
+
+    ```sh
+    cf create-service aws-account devselcops gsa-devsecops-test<#>
+    ```
+
+1. Check the status of the service
+
+    ```sh
+    cf services gsa-devsecops-test<#>
+    ```
+
+    
