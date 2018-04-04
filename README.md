@@ -172,7 +172,7 @@ environment variables:
 1. Create an AWS account.
 
     ```sh
-    cf create-service aws-account devselcops gsa-devsecops-test<#>
+    cf create-service aws-account devsecops gsa-devsecops-test<#>
     ```
 
 1. Check the status of the service
