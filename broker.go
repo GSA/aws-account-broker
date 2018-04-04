@@ -48,13 +48,16 @@ func generateUniqueEmail(baseEmail string, id string) string {
 func (b awsAccountBroker) Services(ctx context.Context) []brokerapi.Service {
 	return []brokerapi.Service{
 		brokerapi.Service{
+			// Hard coding random (version 4) GUID.  If we need to run multiple
+			//  instances of the broker, we may need to do this differently
 			ID:          "1d138a29-ac8b-4360-be9b-db50867fee95",
 			Name:        "aws-account",
 			Description: "Provisions AWS accounts under the organization",
 			Bindable:    true,
-			// TODO add plans
 			Plans: []brokerapi.ServicePlan{
 				brokerapi.ServicePlan{
+					// Another hard coded GUID. I don't know if this needs to be
+					// unique across the service manager or just within the Service
 					ID:          "2e8718e2-0991-48d2-b3be-514303bf762d",
 					Name:        "devsecops",
 					Description: "Provisions AWS accounts under the organization",
