@@ -7,6 +7,7 @@ INSERT INTO "service_instances" VALUES(3,'2018-02-21 19:38:52.56705523-05:00','2
 INSERT INTO "service_instances" VALUES(4,'2018-02-26 16:45:04.123456789-05:00','2018-02-26 16:45:33.123456789-05:00',NULL,'gsa-devsecops-test2','car-59c0f3e01b3e11e88d8f50843ec7f68d');
 INSERT INTO "service_instances" VALUES(5,'2018-02-26 16:45:35.123456789-05:00','2018-02-26 16:45:40.123456789-05:00',NULL,'gsa-devsecops-test3','car-603ec9901b3e11e8ae4b500c66cd64c5');
 INSERT INTO "service_instances" VALUES(6,'2018-02-26 16:45:46.123456789-05:00','2018-02-26 16:45:51.123456789-05:00',NULL,'gsa-devsecops-test4','car-66cd1a001b3e11e8b78850d50297c2c5');
+INSERT INTO "service_instances" VALUES(7,'2018-04-04 09:37:00.123456789-05:00','2018-04-04 09:39:00.123456789-05:00',NULL,'available','car-949fb390380b11e89852500c6f4802c5');
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('service_instances',3);
 CREATE INDEX idx_service_instances_deleted_at ON "service_instances"(deleted_at) ;

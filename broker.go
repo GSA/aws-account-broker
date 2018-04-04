@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -104,7 +103,16 @@ func (b awsAccountBroker) Provision(ctx context.Context, instanceID string, deta
 
 func (b awsAccountBroker) Deprovision(ctx context.Context, instanceID string, details brokerapi.DeprovisionDetails, asyncAllowed bool) (brokerapi.DeprovisionServiceSpec, error) {
 	spec := brokerapi.DeprovisionServiceSpec{}
-	return spec, errors.New("Not able to close accout through the API - see https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_close.html")
+
+	var instance serviceInstance
+	err := b.db.First(&instance, "instance_id = ?", instanceID).Error
+
+	if err != nil {
+		instance.InstanceID = "available"
+		b.db.Save(&instance)
+	}
+
+	return spec, err
 }
 
 func (b awsAccountBroker) Bind(ctx context.Context, instanceID, bindingID string, details brokerapi.BindDetails) (brokerapi.Binding, error) {
