@@ -16,6 +16,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: Add tests for assinging "available" accounts and releasing
+//  assigned accounts.
+
 type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
 	createErr   error

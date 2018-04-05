@@ -108,7 +108,7 @@ func (b awsAccountBroker) Deprovision(ctx context.Context, instanceID string, de
 	err := b.db.First(&instance, "instance_id = ?", instanceID).Error
 
 	if err != nil {
-		instance.InstanceID = "available"
+		instance.InstanceID = "unassigned"
 		b.db.Save(&instance)
 	}
 
