@@ -78,8 +78,14 @@ func main() {
 	brokerAPI := brokerapi.New(broker, logger, creds)
 	http.Handle("/", brokerAPI)
 
-	port := os.Getenv("PORT")
-	origin := ":" + port
+	var origin string
+	port, found := os.LookupEnv("PORT")
+	if found {
+		origin = ":" + port
+	} else {
+		origin = "localhost:8080"
+	}
+
 	logger.Info("Broker listening at " + origin)
 	logger.Fatal("http-listen", http.ListenAndServe(origin, nil))
 }

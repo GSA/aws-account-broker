@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
-	"path/filepath"
 	"testing"
 
 	"code.cloudfoundry.org/lager"
@@ -15,6 +15,9 @@ import (
 	"github.com/pivotal-cf/brokerapi"
 	"github.com/stretchr/testify/assert"
 )
+
+// TODO: Add tests for assinging "available" accounts and releasing
+//  assigned accounts.
 
 type mockOrganizationsClient struct {
 	organizationsiface.OrganizationsAPI
@@ -60,7 +63,8 @@ func mockBroker(createErr error, createState string) awsAccountBroker {
 	baseEmail := "foo@bar.com"
 	logger := lager.NewLogger("test")
 
-	dbFileName := filepath.Join(os.TempDir(), "broker_test.db")
+	dbFileName := "broker-test.db"
+	_ = os.Remove(dbFileName)
 	db, err := gorm.Open("sqlite3", dbFileName)
 	if err != nil {
 		logger.Fatal("startup", errors.New("failed to connect database"))
@@ -68,7 +72,10 @@ func mockBroker(createErr error, createState string) awsAccountBroker {
 
 	//Setup Database structure
 	db.AutoMigrate(&serviceInstance{})
-
+	//Add available account to Database
+	db.Create(&serviceInstance{InstanceID: "available", RequestID: "car-111111111111"})
+	//Add existing account for testing Deprovision
+	db.Create(&serviceInstance{InstanceID: "test-deprovision", RequestID: "car-222222222222"})
 	return awsAccountBroker{mgr, baseEmail, logger, db}
 }
 
@@ -109,10 +116,22 @@ func TestProvisionSuccess(t *testing.T) {
 	ctx := context.Background()
 	details := brokerapi.ProvisionDetails{}
 
-	spec, err := broker.Provision(ctx, "test-account", details, true)
+	spec, err := broker.Provision(ctx, "test-reassign", details, true)
+
+	//Decode the OperationData JSON
+	var dat map[string]interface{}
+	json.Unmarshal([]byte(spec.OperationData), &dat)
 
 	assert.NoError(t, err)
 	assert.True(t, spec.IsAsync)
+	assert.Equal(t, "car-111111111111", dat["Id"].(string))
+
+	spec, err = broker.Provision(ctx, "test-create", details, true)
+	json.Unmarshal([]byte(spec.OperationData), &dat)
+
+	assert.NoError(t, err)
+	assert.True(t, spec.IsAsync)
+	assert.Equal(t, "car-999999999999", dat["Id"].(string))
 }
 
 func TestProvisionFail(t *testing.T) {
@@ -144,4 +163,17 @@ func TestLastOperation(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, brokerapi.Succeeded, result.State)
+}
+
+func TestDeprovision(t *testing.T) {
+	broker := mockBroker(nil, organizations.CreateAccountStateSucceeded)
+	ctx := context.Background()
+	details := brokerapi.DeprovisionDetails{
+		PlanID:    "2e8718e2-0991-48d2-b3be-514303bf762d",
+		ServiceID: "1d138a29-ac8b-4360-be9b-db50867fee95",
+	}
+
+	_, err := broker.Deprovision(ctx, "test-deprovision", details, false)
+
+	assert.NoError(t, err)
 }
