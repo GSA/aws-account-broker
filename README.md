@@ -166,7 +166,7 @@ environment variables:
 1. Display the broker in marketplace
 
     ```sh
-    cf marketplace -s aws-broker
+    cf marketplace -s aws-account
     ```
 
 1. Create an AWS account.
@@ -175,8 +175,8 @@ environment variables:
     cf create-service aws-account devsecops gsa-devsecops-test<#>
     ```
 
-1. Check the status of the service
+1. Check the status of the service.  Once the account is created, this will give you the account number.
 
     ```sh
-    cf services gsa-devsecops-test<#>
+    cf service gsa-devsecops-test<#>
     ```
